@@ -1,0 +1,213 @@
+import { ipcRenderer, IpcRendererEvent } from 'electron'
+
+window.addEventListener('DOMContentLoaded', (): void => {
+  // query and check if user has logged in, and set initial style as centered
+  setTimeout((): void => {
+    const chat: HTMLIFrameElement = <HTMLIFrameElement>(
+      document.getElementById('chat')
+    )
+    const dom: Document = chat.contentWindow.document
+    const serp: Element = dom.querySelector('.cib-serp-main')
+    const conversationMain: HTMLElement = serp.shadowRoot.getElementById(
+      'cib-conversation-main'
+    )
+    // Centered Elements
+    const scroller: HTMLElement =
+      conversationMain.shadowRoot.querySelector('.scroller')
+    const actionBarMain: HTMLElement = serp.shadowRoot.getElementById(
+      'cib-action-bar-main'
+    )
+    scroller.style.cssText += 'justify-content: center;'
+    actionBarMain.style.cssText += 'max-width: unset'
+  }, 1200)
+})
+
+// New Topic
+ipcRenderer.on('new-topic', (): void => {
+  setTimeout((): void => {
+    try {
+      const chat: HTMLIFrameElement = <HTMLIFrameElement>(
+        document.getElementById('chat')
+      )
+      const dom: Document = chat.contentWindow.document
+      const newTopicBtn: HTMLElement = dom
+        .getElementsByTagName('cib-serp')[0]
+        .shadowRoot.getElementById('cib-action-bar-main')
+        .shadowRoot.querySelector('.button-compose')
+      if (newTopicBtn) {
+        newTopicBtn.click()
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  }, 1000)
+})
+
+// Focus on TextArea
+ipcRenderer.on('focus-on-textarea', (): void => {
+  setTimeout((): void => {
+    try {
+      const chat: HTMLIFrameElement = <HTMLIFrameElement>(
+        document.getElementById('chat')
+      )
+      const dom: Document = chat.contentWindow.document
+      const textArea: HTMLElement = dom
+        .getElementsByTagName('cib-serp')[0]
+        .shadowRoot.getElementById('cib-action-bar-main')
+        .shadowRoot.querySelector('.input-container.as-ghost-placement')
+        .getElementsByTagName('cib-text-input')[0]
+        .shadowRoot.getElementById('searchbox')
+      if (textArea) {
+        textArea.focus()
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  }, 1000)
+})
+
+// Stop Responding
+ipcRenderer.on('stop-responding', (): void => {
+  setTimeout((): void => {
+    try {
+      const chat: HTMLIFrameElement = <HTMLIFrameElement>(
+        document.getElementById('chat')
+      )
+      const dom: Document = chat.contentWindow.document
+      const stopBtn: HTMLElement = dom
+        .getElementsByTagName('cib-serp')[0]
+        .shadowRoot.getElementById('cib-action-bar-main')
+        .shadowRoot.querySelector('.root')
+        .getElementsByTagName('cib-typing-indicator')[0]
+        .shadowRoot.getElementById('stop-responding-button')
+      if (stopBtn) {
+        stopBtn.click()
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  }, 1000)
+})
+
+// Quick Reply
+ipcRenderer.on('quick-reply', (event: IpcRendererEvent, id: number): void => {
+  setTimeout((): void => {
+    try {
+      const chat: HTMLIFrameElement = <HTMLIFrameElement>(
+        document.getElementById('chat')
+      )
+      const dom: Document = chat.contentWindow.document
+      const suggestionReplies: HTMLCollectionOf<Element> = dom
+        .getElementsByTagName('cib-serp')[0]
+        .shadowRoot.getElementById('cib-conversation-main')
+        .shadowRoot.querySelector('.content')
+        .getElementsByTagName('cib-suggestion-bar')[0]
+        .shadowRoot.querySelector('.suggestion-items')
+        .getElementsByTagName('cib-suggestion-item')
+      if (suggestionReplies) {
+        suggestionReplies[id - 1].shadowRoot.querySelector('button').click()
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  }, 1000)
+})
+
+// Switch Tone
+ipcRenderer.on(
+  'switch-tone',
+  (event: IpcRendererEvent, direction: string): void => {
+    setTimeout((): void => {
+      try {
+        const chat: HTMLIFrameElement = <HTMLIFrameElement>(
+          document.getElementById('chat')
+        )
+        const dom: Document = chat.contentWindow.document
+        const toneOptions: HTMLElement = dom
+          .getElementsByTagName('cib-serp')[0]
+          .shadowRoot.getElementById('cib-conversation-main')
+          .shadowRoot.querySelector('#cib-chat-main')
+          .getElementsByTagName('cib-welcome-container')[0]
+          .shadowRoot.querySelector('.controls')
+          .getElementsByTagName('cib-tone-selector')[0]
+          .shadowRoot.getElementById('tone-options')
+        if (toneOptions) {
+          const toneButtons: NodeListOf<HTMLButtonElement> =
+            toneOptions.querySelectorAll('button')
+          const selectedBtn: HTMLButtonElement =
+            toneOptions.querySelector('button[selected]')
+          let index: number = Array.from(toneButtons).indexOf(selectedBtn)
+          switch (direction) {
+            case 'right':
+              if (index === toneButtons.length - 1) {
+                index = 0
+              } else {
+                index++
+              }
+              break
+            case 'left':
+              if (index === 0) {
+                index = toneButtons.length - 1
+              } else {
+                index--
+              }
+          }
+          toneButtons[index].click()
+        }
+      } catch (error) {
+        console.log(error)
+      }
+    }, 1000)
+  }
+)
+
+// Set Font Size
+ipcRenderer.on(
+  'set-font-size',
+  (event: IpcRendererEvent, size: number): void => {
+    setTimeout((): void => {
+      try {
+        const chat: HTMLIFrameElement = <HTMLIFrameElement>(
+          document.getElementById('chat')
+        )
+        const dom: Document = chat.contentWindow.document
+        const serp: HTMLElement = dom.querySelector('.cib-serp-main')
+        const conversationMain: HTMLElement = serp.shadowRoot.getElementById(
+          'cib-conversation-main'
+        )
+        conversationMain.style.cssText =
+          serp.style.cssText += `--cib-type-body1-font-size: ${size}px; --cib-type-body1-strong-font-size: ${size}px; --cib-type-body2-font-size: ${size}px; --cib-type-body2-line-height: ${
+            size + 6
+          }px`
+      } catch (error) {
+        console.log(error)
+      }
+    }, 1000)
+  }
+)
+
+// Set Initial Style
+ipcRenderer.on('set-initial-style', (): void => {
+  setTimeout((): void => {
+    try {
+      const chat: HTMLIFrameElement = <HTMLIFrameElement>(
+        document.getElementById('chat')
+      )
+      const dom: Document = chat.contentWindow.document
+      const serp: HTMLElement = dom.querySelector('.cib-serp-main')
+      const conversationMain: HTMLElement = serp.shadowRoot.getElementById(
+        'cib-conversation-main'
+      )
+      // Centered elements
+      const scroller: HTMLElement =
+        conversationMain.shadowRoot.querySelector('.scroller')
+      const actionBarMain: HTMLElement = serp.shadowRoot.getElementById(
+        'cib-action-bar-main'
+      )
+      scroller.style.cssText += 'justify-content: center'
+      actionBarMain.style.cssText += 'max-width: unset'
+    } catch (error) {
+      console.log(error)
+    }
+  }, 1000)
+})

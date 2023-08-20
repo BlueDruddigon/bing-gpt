@@ -1,0 +1,16 @@
+appId: com.blued.binggpt
+productName: BingGPT
+copyright: Copyright © 2018 BlueDruddigon
+directories:
+  output: dist
+  buildResources: assets
+files:
+  - from: .
+    filter:
+      - package.json
+      - app
+publish: null
+linux:
+  target: pacman
+  icon: assets/icon/icon.icns
+  maintainer: BlueDruddigon
