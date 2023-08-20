@@ -2,7 +2,7 @@ module.exports = {
   mainSrcDir: 'src/main',
   rendererSrcDir: 'src',
 
-  webpack: (config, env) => {
+  webpack: config => {
     Object.assign(config, {
       entry: {
         background: './src/main/background.ts',
