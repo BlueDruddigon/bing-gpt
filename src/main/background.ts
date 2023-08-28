@@ -9,7 +9,8 @@ import {
   Menu,
   MessageBoxReturnValue,
   nativeTheme,
-  OnHeadersReceivedListenerDetails
+  OnHeadersReceivedListenerDetails,
+  shell
 } from 'electron'
 import serve from 'electron-serve'
 import Store, { Schema } from 'electron-store'
@@ -51,11 +52,45 @@ const config: Store<configSchemaType> = new Store<configSchemaType>({
   schema: configSchema
 })
 
-const createWindow = (): void => {
+const createWindow = (URL?: string): void => {
+  // Init style
+  ipcMain.on('init-style', (): void => {
+    const fontSize: number = config.get('fontSize')
+    if (fontSize !== 14) {
+      BrowserWindow.getAllWindows()[0].webContents.send(
+        'set-font-size',
+        fontSize
+      )
+    }
+    BrowserWindow.getAllWindows()[0].webContents.send('set-initial-style')
+  })
+
+  // Error
+  ipcMain.on('error', (_: IpcMainEvent, detail: string): void => {
+    dialog
+      .showMessageBox({
+        type: 'info',
+        message: 'Error',
+        detail: detail
+      })
+      .then((): void => {})
+  })
+
   // Get theme settings
   const theme: string = config.get('theme')
   const isDarkMode: boolean =
     theme === 'system' ? nativeTheme.shouldUseDarkColors : theme === 'dark'
+
+  // Handle URL
+  let mainURL: string
+  if (typeof URL !== 'undefined') {
+    mainURL = URL
+  } else if (isProd) {
+    mainURL = `app://./index.html?theme=${theme}`
+  } else {
+    const port = process.argv[2]
+    mainURL = `http://localhost:${port}?theme=${theme}`
+  }
 
   // Create Window
   const mainWindow: BrowserWindow = new BrowserWindow({
@@ -92,8 +127,11 @@ const createWindow = (): void => {
       })
       .then((result: MessageBoxReturnValue) => {
         if (result.response === 0) {
+          mainURL =
+            mainWindow.webContents.getURL().split('?theme=')[0] +
+            `?theme=${newTheme}`
           mainWindow.close()
-          createWindow()
+          createWindow(mainURL)
         }
       })
   }
@@ -114,7 +152,7 @@ const createWindow = (): void => {
     window: mainWindow.webContents,
     showServices: true,
     showSelectAll: false,
-    prepend: (defaultActions: Actions, parameters: ContextMenuParams) => [
+    prepend: (_: Actions, parameters: ContextMenuParams) => [
       {
         label: 'Reload',
         visible: parameters.selectionText.trim().length === 0,
@@ -224,13 +262,13 @@ const createWindow = (): void => {
   mainWindow.webContents.setUserAgent(userAgent)
 
   // Load URL
-  if (isProd) {
-    mainWindow.loadURL('app://./index.html').then((): void => {})
-  } else {
-    const port: string = process.argv[2]
-    mainWindow.loadURL(`http://localhost:${port}`).then((): void => {})
-    mainWindow.webContents.openDevTools()
-  }
+  mainWindow.loadURL(mainURL).then((): void => {})
+
+  // Open links in default browser
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    shell.openExternal(url).then((): void => {})
+    return { action: 'deny' }
+  })
 
   // Redirect after logging in
   mainWindow.webContents.on(
@@ -245,15 +283,7 @@ const createWindow = (): void => {
           .loadURL('https://edgeservices.bing.com/edgesvc/shell')
           .then((): void => {
             setTimeout((): void => {
-              if (isProd) {
-                mainWindow.loadURL('app://./index.html').then((): void => {})
-              } else {
-                const port: string = process.argv[2]
-                mainWindow
-                  .loadURL(`http://localhost:${port}`)
-                  .then((): void => {})
-                mainWindow.webContents.openDevTools()
-              }
+              mainWindow.loadURL(mainURL).then((): void => {})
             }, 3000)
           })
       }
@@ -263,7 +293,7 @@ const createWindow = (): void => {
   // Modify Content-Security-Policy
   mainWindow.webContents.session.webRequest.onHeadersReceived(
     (details: OnHeadersReceivedListenerDetails, callback) => {
-      const { responseHeaders } = details
+      const { responseHeaders }: OnHeadersReceivedListenerDetails = details
       if (responseHeaders['content-security-policy']) {
         responseHeaders['content-security-policy'][0]
           .replace(`require-trusted-types-for 'script'`, '')
@@ -341,37 +371,12 @@ const createWindow = (): void => {
   )
 }
 
-app.whenReady().then((): void => {
-  // Init style
-  ipcMain.on('init-style', (): void => {
-    const fontSize: number = config.get('fontSize')
-    if (fontSize !== 14) {
-      BrowserWindow.getAllWindows()[0].webContents.send(
-        'set-font-size',
-        fontSize
-      )
-    }
-    BrowserWindow.getAllWindows()[0].webContents.send('set-initial-style')
-  })
+app.whenReady().then(() => createWindow())
 
-  // Error
-  ipcMain.on('error', (event: IpcMainEvent, detail: string): void => {
-    dialog
-      .showMessageBox({
-        type: 'info',
-        message: 'Error',
-        detail: detail
-      })
-      .then((): void => {})
-  })
-
-  createWindow()
-
-  app.on('activate', (): void => {
-    if (BrowserWindow.getAllWindows().length === 0) {
-      createWindow()
-    }
-  })
+app.on('activate', () => {
+  if (BrowserWindow.getAllWindows.length === 0) {
+    createWindow()
+  }
 })
 
 app.on('window-all-closed', (): void => {
