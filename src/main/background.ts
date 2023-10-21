@@ -95,8 +95,8 @@ const createWindow = (URL?: string): void => {
   const mainWindow: BrowserWindow = new BrowserWindow({
     title: 'BingGPT',
     backgroundColor: isDarkMode ? '#1c1c1c' : '#eeeeee',
-    height: 870,
-    width: 600,
+    height: 725,
+    width: 450,
     titleBarStyle: 'default',
     titleBarOverlay: {
       color: isDarkMode ? '#333333' : '#ffffff',

@@ -90,7 +90,7 @@ ipcRenderer.on('stop-responding', (): void => {
 })
 
 // Quick Reply
-ipcRenderer.on('quick-reply', (event: IpcRendererEvent, id: number): void => {
+ipcRenderer.on('quick-reply', (_: IpcRendererEvent, id: number): void => {
   setTimeout((): void => {
     try {
       const chat: HTMLIFrameElement = <HTMLIFrameElement>(
@@ -116,7 +116,7 @@ ipcRenderer.on('quick-reply', (event: IpcRendererEvent, id: number): void => {
 // Switch Tone
 ipcRenderer.on(
   'switch-tone',
-  (event: IpcRendererEvent, direction: string): void => {
+  (_: IpcRendererEvent, direction: string): void => {
     setTimeout((): void => {
       try {
         const chat: HTMLIFrameElement = <HTMLIFrameElement>(
@@ -162,29 +162,26 @@ ipcRenderer.on(
 )
 
 // Set Font Size
-ipcRenderer.on(
-  'set-font-size',
-  (event: IpcRendererEvent, size: number): void => {
-    setTimeout((): void => {
-      try {
-        const chat: HTMLIFrameElement = <HTMLIFrameElement>(
-          document.getElementById('chat')
-        )
-        const dom: Document = chat.contentWindow.document
-        const serp: HTMLElement = dom.querySelector('.cib-serp-main')
-        const conversationMain: HTMLElement = serp.shadowRoot.getElementById(
-          'cib-conversation-main'
-        )
-        conversationMain.style.cssText =
-          serp.style.cssText += `--cib-type-body1-font-size: ${size}px; --cib-type-body1-strong-font-size: ${size}px; --cib-type-body2-font-size: ${size}px; --cib-type-body2-line-height: ${
-            size + 6
-          }px`
-      } catch (error) {
-        console.log(error)
-      }
-    }, 1000)
-  }
-)
+ipcRenderer.on('set-font-size', (_: IpcRendererEvent, size: number): void => {
+  setTimeout((): void => {
+    try {
+      const chat: HTMLIFrameElement = <HTMLIFrameElement>(
+        document.getElementById('chat')
+      )
+      const dom: Document = chat.contentWindow.document
+      const serp: HTMLElement = dom.querySelector('.cib-serp-main')
+      const conversationMain: HTMLElement = serp.shadowRoot.getElementById(
+        'cib-conversation-main'
+      )
+      conversationMain.style.cssText =
+        serp.style.cssText += `--cib-type-body1-font-size: ${size}px; --cib-type-body1-strong-font-size: ${size}px; --cib-type-body2-font-size: ${size}px; --cib-type-body2-line-height: ${
+          size + 6
+        }px`
+    } catch (error) {
+      console.log(error)
+    }
+  }, 1000)
+})
 
 // Set Initial Style
 ipcRenderer.on('set-initial-style', (): void => {
