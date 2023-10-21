@@ -6,7 +6,6 @@ import {
   Input,
   ipcMain,
   IpcMainEvent,
-  Menu,
   MessageBoxReturnValue,
   nativeTheme,
   OnHeadersReceivedListenerDetails,
@@ -96,9 +95,9 @@ const createWindow = (URL?: string): void => {
   const mainWindow: BrowserWindow = new BrowserWindow({
     title: 'BingGPT',
     backgroundColor: isDarkMode ? '#1c1c1c' : '#eeeeee',
-    height: 800,
-    width: 650,
-    titleBarStyle: 'hidden',
+    height: 870,
+    width: 600,
+    titleBarStyle: 'default',
     titleBarOverlay: {
       color: isDarkMode ? '#333333' : '#ffffff',
       symbolColor: isDarkMode ? '#eeeeee' : '#1c1c1c'
@@ -111,9 +110,6 @@ const createWindow = (URL?: string): void => {
       sandbox: false
     }
   })
-
-  // Hide Main Menu Bar
-  Menu.setApplicationMenu(null)
 
   // Theme Handler
   const themeHandler = (newTheme: configSchemaType['theme']): void => {

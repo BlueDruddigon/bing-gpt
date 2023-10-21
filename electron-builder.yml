@@ -15,3 +15,8 @@ linux:
   icon: assets/icon/icon.icns
   maintainer: BlueDruddigon
   category: Utility
+mac:
+  target: zip
+  icon: assets/icon/icon.icns
+  category: Utility
+  darkModeSupport: true
