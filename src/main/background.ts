@@ -75,6 +75,15 @@ const createWindow = (URL?: string): void => {
       .then((): void => {})
   })
 
+  // logout
+  ipcMain.on('logout', () => {
+    mainWindow.webContents.session
+      .clearStorageData({ storages: ['cookies'] })
+      .then(() => {
+        mainWindow.loadURL(mainURL).then(() => {})
+      })
+  })
+
   // Get theme settings
   const theme: string = config.get('theme')
   const isDarkMode: boolean =
@@ -97,7 +106,6 @@ const createWindow = (URL?: string): void => {
     backgroundColor: isDarkMode ? '#1c1c1c' : '#eeeeee',
     height: 725,
     width: 450,
-    titleBarStyle: 'default',
     titleBarOverlay: {
       color: isDarkMode ? '#333333' : '#ffffff',
       symbolColor: isDarkMode ? '#eeeeee' : '#1c1c1c'
@@ -285,6 +293,11 @@ const createWindow = (URL?: string): void => {
       }
     }
   )
+
+  // Add logout icons on URL changed
+  mainWindow.webContents.on('did-navigate-in-page', () => {
+    mainWindow.webContents.send('init-logout')
+  })
 
   // Modify Content-Security-Policy
   mainWindow.webContents.session.webRequest.onHeadersReceived(

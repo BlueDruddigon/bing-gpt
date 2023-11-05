@@ -1,5 +1,36 @@
 import { ipcRenderer, IpcRendererEvent } from 'electron'
 
+const createSignOut = (asIcon: boolean) => {
+  let signOutBtn: HTMLDivElement | HTMLButtonElement
+  if (asIcon) {
+    signOutBtn = document.createElement('button')
+  } else {
+    signOutBtn = document.createElement('div')
+  }
+
+  if (asIcon) {
+    signOutBtn.setAttribute('is', 'cib-button')
+    signOutBtn.id = 'cib-header-button-sign-out'
+    signOutBtn.setAttribute('appearance', 'subtle')
+    signOutBtn.setAttribute('type', 'button')
+
+    signOutBtn.innerHTML = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" stroke-width="1" stroke="#ceccca" fill="none">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+      <path d="M14 8v-2a2 2 0 0 0 -2 -2h-7a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h7a2 2 0 0 0 2 -2v-2"></path>
+      <path d="M9 12h12l-3 -3"></path>
+      <path d="M18 15l3 -3"></path>
+    </svg>
+  `
+  } else {
+    signOutBtn.className = 'header'
+    signOutBtn.innerHTML = `
+      <a href="javascript:void(0);" ><h2>SignOut</h2></a>
+    `
+  }
+  return signOutBtn
+}
+
 window.addEventListener('DOMContentLoaded', (): void => {
   // query and check if user has logged in, and set initial style as centered
   setTimeout((): void => {
@@ -11,6 +42,25 @@ window.addEventListener('DOMContentLoaded', (): void => {
     const conversationMain: HTMLElement = serp.shadowRoot.getElementById(
       'cib-conversation-main'
     )
+
+    // add logout icon
+    const windowWidth = document.body.clientWidth
+    if (windowWidth <= 832) {
+      const header = serp.shadowRoot.querySelector('cib-header-bar')
+      const signOutBtn = createSignOut(true)
+      signOutBtn.onclick = () => {
+        ipcRenderer.send('logout')
+      }
+      header.shadowRoot.append(signOutBtn)
+    } else {
+      const panelHeader = conversationMain.querySelector('cib-side-panel')
+      const signOutBtn = createSignOut(false)
+      signOutBtn.onclick = () => {
+        ipcRenderer.send('logout')
+      }
+      panelHeader.shadowRoot.prepend(signOutBtn)
+    }
+
     // Centered Elements
     const scroller: HTMLElement =
       conversationMain.shadowRoot.querySelector('.scroller')
@@ -207,4 +257,37 @@ ipcRenderer.on('set-initial-style', (): void => {
       console.log(error)
     }
   }, 1000)
+})
+
+ipcRenderer.on('init-logout', () => {
+  if (window.location.href.includes('/chat?')) {
+    setTimeout(() => {
+      const chat: HTMLIFrameElement = <HTMLIFrameElement>(
+        document.getElementById('chat')
+      )
+      const dom: Document = chat.contentWindow.document
+      const serp: HTMLElement = dom.querySelector('.cib-serp-main')
+      const conversationMain: HTMLElement = serp.shadowRoot.getElementById(
+        'cib-conversation-main'
+      )
+
+      // add logout icon
+      const windowWidth = document.body.clientWidth
+      if (windowWidth <= 832) {
+        const header = serp.shadowRoot.querySelector('cib-header-bar')
+        const signOutBtn = createSignOut(true)
+        signOutBtn.onclick = () => {
+          ipcRenderer.send('logout')
+        }
+        header.shadowRoot.append(signOutBtn)
+      } else {
+        const panelHeader = conversationMain.querySelector('cib-side-panel')
+        const signOutBtn = createSignOut(false)
+        signOutBtn.onclick = () => {
+          ipcRenderer.send('logout')
+        }
+        panelHeader.shadowRoot.prepend(signOutBtn)
+      }
+    }, 1000)
+  }
 })
